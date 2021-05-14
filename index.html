@@ -1,32 +1,18 @@
-<!-- <head>
-	<head>
-		<title>Real-time Stock Price Chart</title>
-		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	</head>
-	<body>
-
-		<input type="text" method="put" id="search" placeholder="Stock Symbol" value="">
-        <input type='submit' onclick="sendToPage();" value="Add"/>
-        <ul id="dynamic-list"></ul>
-        <div id="barchart_values" style="width: 900px; height: 300px;"></div>
-
-		<script type="text/javascript" src="script_test.js"></script>
-	</body>
-</head> -->
-
 <head>
 	<head>
 		<title>Real-time Stock Price Chart</title>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-		
+		<script type="text/javascript">
+		  google.load("visualization", {packages:["corechart"]});
+		  google.setOnLoadCallback(function() { initializeGoogleChart(); });
+		</script>
 	</head>
 	<body>
-
 		<input type="text" method="put" id="search" placeholder="Stock Symbol" value="">
-        <input type='submit' onclick="sendToPage();" value="Add"/>
-        <ul id="dynamic-list"></ul>
-        <div id="barchart_values" style="width: 900px; height: 300px;"></div>
-
-		<script type="text/javascript" src="script_test.js"></script>
+        <input type='submit' onclick="addStockData();" value="Add"/>
+        <div id="errorMessage"></div>
+        <ul id="stockList"></ul>
+        <div id="barchartValues" style="width: 900px; height: 300px;"></div>
+		<script type="text/javascript" src="script.js"></script>
 	</body>
 </head>
