@@ -16,39 +16,46 @@ function initializeGoogleChart() {
  */
 function addStockData(){
   let companyCode = document.getElementById("search").value.toUpperCase();
-  fetch('https://cloud.iexapis.com/stable/stock/'+companyCode+'/quote?token=pk_5b46fde2b6f6418384be4738ad20b663', {
-    headers : {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-     }
-  }).then(response => response.json())
-    .then(data => {
-      dataTable.addRow([companyCode, data.latestPrice, data.latestPrice]);
-      drawBasic();
-      let ul = document.getElementById("stockList");
-      let li = document.createElement("li");
-      li.setAttribute('id',companyCode);
-      li.appendChild(document.createTextNode(companyCode));
-      ul.appendChild(li);
-      if (dataTable.getNumberOfRows() == 1) {
-        companyList = companyList.concat(companyCode);
-        updateChart();
-      }
-      else {
-        companyList = companyList.concat(",").concat(companyCode);
-      }
-    }).catch((error) => {
-      document.getElementById('errorMessage').style.display='block';
-      document.getElementById("errorMessage").innerHTML = "Error while getting data. Please check stock symbol";
-      setTimeout(function () {document.getElementById('errorMessage').style.display='none';}, 3000);
-    });
+  if (companyList.includes(companyCode)) {
+    document.getElementById("errorMessage").innerHTML = companyCode+" stock symbol is already added. Please try other stock symbol";
+    document.getElementById('errorMessage').style.display='block';
+    setTimeout(function () {document.getElementById('errorMessage').style.display='none';}, 3000);
+  }
+  else {
+    fetch('https://cloud.iexapis.com/stable/stock/'+companyCode+'/quote?token=pk_60969cf2b45b429883fe2db2c75e8832', {
+      headers : {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+       }
+    }).then(response => response.json())
+      .then(data => {
+        dataTable.addRow([companyCode, data.latestPrice, data.latestPrice]);
+        drawBasic();
+        let ul = document.getElementById("stockList");
+        let li = document.createElement("li");
+        li.setAttribute('id',companyCode);
+        li.appendChild(document.createTextNode(companyCode));
+        ul.appendChild(li);
+        if (dataTable.getNumberOfRows() == 1) {
+          companyList = companyList.concat(companyCode);
+          updateChart();
+        }
+        else {
+          companyList = companyList.concat(",").concat(companyCode);
+        }
+      }).catch((error) => {
+        document.getElementById("errorMessage").innerHTML = "Error while getting data. Please check stock symbol";
+        document.getElementById('errorMessage').style.display='block';
+        setTimeout(function () {document.getElementById('errorMessage').style.display='none';}, 3000);
+      });
+  }
 }
 
 /**
  * Function to update the existing company stock price in real time
  */
 function updateChart() {
-  fetch('https://cloud.iexapis.com/stable/stock/market/batch?symbols='+companyList+'&types=quote&range=1y&token=pk_5b46fde2b6f6418384be4738ad20b663', {
+  fetch('https://cloud.iexapis.com/stable/stock/market/batch?symbols='+companyList+'&types=quote&range=1y&token=pk_60969cf2b45b429883fe2db2c75e8832', {
     headers : {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -60,6 +67,7 @@ function updateChart() {
              if (company == dataTable.getValue(j,0)) {
                 dataTable.setValue(j,1,data[company]["quote"].latestPrice);
                 dataTable.setValue(j,2,data[company]["quote"].latestPrice);
+                console.log(data[company]["quote"].latestPrice);
              }
           }
         }
