@@ -1,0 +1,29 @@
+.sticky {
+    background: white;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+ul {
+    list-style-type: none;
+}
+
+list-group-item {
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.new_button {
+    height: 30px;
+    font-size: 13px;
+}
+
+.sidebar {
+    background-color:#FAFAFA;
+}
+
+.profitPercentage {
+    font-size: 10px;
+    padding-bottom: 1px;
+}
