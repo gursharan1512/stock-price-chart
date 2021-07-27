@@ -13,6 +13,11 @@ function initializeGoogleChart() {
   dataTable.addColumn({type:'number', role:'annotation'});
 }
 
+function updateBar() {
+  document.getElementsByClassName('progress-bar').item(1).setAttribute('aria-valuenow',10);
+  document.getElementsByClassName('progress-bar').item(1).setAttribute('style','width:10%');
+}
+
 function loadPortfolio() {
   var storageMeta = JSON.parse(window.localStorage.getItem("stockInfo"));
   var storageCompanyList = "";
@@ -33,7 +38,6 @@ function loadPortfolio() {
         .then(data => {
           updatePortfolioView(storageMeta[i]['symbol'],storageMeta[i]['buyPrice'],data.latestPrice,storageMeta[i]['target']);
         });
-      // updatePortfolioView(stockInfo['symbol'],stockInfo['buyPrice'],stockInfo['currentPrice'],stockInfo['target']);
     }
     // if(todayHour>7 && ( todayHour<13 )) {
     //   updateBarDynamically(storageCompanyList);
