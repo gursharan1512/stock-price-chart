@@ -11,50 +11,37 @@ function initializeGoogleChart() {
   dataTable.addColumn({type:'number', role:'annotation'});
 }
 
-function buyStock(testSymbol) {
-  var symbol = testSymbol.textContent.split(" ")[0];
-  console.log("testing onclick parameter - "+testSymbol.textContent.split(" ")[0]);
-  console.log("currentData"+symbol);
+function buyStock(stockSymbol, currentPrice) {
+
+  var symbol = stockSymbol.textContent.split(" ")[0];
   var buyPrice = document.getElementById("currentData"+symbol).value;
   var target = document.getElementById("targetData"+symbol).value;
 
-  var percent = 100*buyPrice/target;
-
-  var currentPrice = 0;
-  //var currentPrice = buyPrice;
-  if(symbol=="AAPL") {
-    currentPrice = 148.99;
-  }
-  if(symbol=="MSFT") {
-    currentPrice = 289.05;
-  }
-  console.log("buyPrice - "+buyPrice);
-  console.log("currentPrice - "+currentPrice);
+  
   var profitLoss = (currentPrice-buyPrice).toFixed(2);
-  console.log("profitLoss - "+profitLoss);
   var profitLossPercent = (100*profitLoss/currentPrice).toFixed(2);
-  var newPercent = (currentPrice-buyPrice)*100/target;
 
-  console.log("original percent - "+percent);
-  console.log("new percent - "+newPercent);
+  var barPercent = (100*buyPrice/target).toFixed(2);
+  var barProfitPercent = (currentPrice-buyPrice)*100/target;
 
-  document.getElementById("demo").innerHTML += '<div class="row border-top mt-3 mb-2"><div class="col-4">'+symbol+'</div><div class="col-3">'+currentPrice+'</div><div class="col-2">'+profitLoss+'</div><div class="col-3 d-flex align-items-end profitPercentage">('+profitLossPercent+'%)</div></div>';
+  //document.getElementById("demo").innerHTML += '<div class="row border-top mt-3 mb-2"><div class="col-4">'+symbol+'</div><div class="col-3">'+currentPrice+'</div><div class="col-2">'+profitLoss+'</div><div class="col-3 d-flex align-items-end profitPercentage">('+profitLossPercent+'%)</div></div>';
+  document.getElementById("demo").innerHTML += '<div class="row border-top mt-3 mb-2"><div class="col-4">'+symbol+'<span class="pl-2">Avg. '+buyPrice+'</span></div><div class="col-3">'+currentPrice+'</div><div class="col-5">'+profitLoss+'<span>('+profitLossPercent+'%)</span></div>';
 
-  if(newPercent > 0) {
-    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+percent+'%" aria-valuenow="'+percent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: '+newPercent+'%" aria-valuenow="'+newPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
+  if(barProfitPercent >= 0) {
+    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+barPercent+'%" aria-valuenow="'+barPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: '+barProfitPercent+'%" aria-valuenow="'+barProfitPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
   }
   else {
-    newPercent = -1*newPercent;
-    percent = percent-newPercent;
-    console.log("new percent - "+newPercent);
-    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+percent+'%" aria-valuenow="'+percent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: '+newPercent+'%" aria-valuenow="'+newPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
+    barProfitPercent = -1*barProfitPercent;
+    barPercent = barPercent-barProfitPercent;
+    console.log("new percent - "+barProfitPercent);
+    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+barPercent+'%" aria-valuenow="'+barPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: '+barProfitPercent+'%" aria-valuenow="'+barProfitPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
   }
 }
 
 /**
  * Function to get stock price data and add to the bar chart data
  */
-function addStockData(){
+function getStockInfo(){
   let companyCode = document.getElementById("search").value.toUpperCase();
   if (companyList.includes(companyCode)) {
     document.getElementById("errorMessage").innerHTML = companyCode+" stock symbol is already added. Please try other stock symbol";
@@ -75,7 +62,7 @@ function addStockData(){
         let li = document.createElement("li");
         li.setAttribute('id',companyCode);
         li.innerHTML += '<li class="list-group-item">'+companyCode+'<button class="btn btn-primary float-right new_button" type="button" data-toggle="collapse" data-target="#collapse'+companyCode+'" aria-expanded="false" aria-controls="collapse'+companyCode+'"> Buy </button> </li> ';
-        li.innerHTML += '<div class="collapse" id="collapse'+companyCode+'"><div class="card card-body"> <form><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Current Price:</label></div><div class="col-9"><input type="number" id="currentData'+companyCode+'" class="form-control validate mb-3" value="'+data.latestPrice+'"></div></div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Target:</label></div><div class="col-9"><input type="number" id="targetData'+companyCode+'" class="form-control validate mb-3"></div></div><button type="submit" class="btn btn-secondary mb-2 new_button d-flex align-items-center" onclick="buyStock('+companyCode+')" data-toggle="collapse" data-target="#collapse'+companyCode+'">Submit</button></form> </div></div>'
+        li.innerHTML += '<div class="collapse" id="collapse'+companyCode+'"><div class="card card-body"> <div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Current Price:</label></div><div class="col-9"><input type="number" id="currentData'+companyCode+'" class="form-control validate mb-3" value="'+data.latestPrice+'"></div></div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Target:</label></div><div class="col-9"><input type="number" id="targetData'+companyCode+'" class="form-control validate mb-3"></div></div><button type="submit" class="btn btn-secondary mb-2 new_button d-flex align-items-center" onclick="buyStock('+companyCode+','+data.latestPrice+')" data-toggle="collapse" data-target="#collapse'+companyCode+'">Submit</button></div> </div></div>'
 
         ul.appendChild(li);
         if (dataTable.getNumberOfRows() == 1) {
