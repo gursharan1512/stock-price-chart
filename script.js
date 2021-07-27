@@ -15,10 +15,29 @@ function initializeGoogleChart() {
 
 function loadPortfolio() {
   var storageMeta = JSON.parse(window.localStorage.getItem("stockInfo"));
+  var storageCompanyList = "";
   if(storageMeta != null) {
-    for(let stockInfo of storageMeta) {
-      updatePortfolioView(stockInfo['symbol'],stockInfo['buyPrice'],stockInfo['currentPrice'],stockInfo['target']);
+    for(let i = 0; i<storageMeta.length; i++) {
+      if(i == 0) {
+        storageCompanyList = storageCompanyList.concat(storageMeta[i]['symbol']);
+      }
+      else {
+        storageCompanyList = storageCompanyList.concat(",").concat(storageMeta[i]['symbol']);
+      }
+      fetch('https://cloud.iexapis.com/stable/stock/'+storageMeta[i]['symbol']+'/quote?token=pk_60969cf2b45b429883fe2db2c75e8832', {
+      headers : {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+       }
+      }).then(response => response.json())
+        .then(data => {
+          updatePortfolioView(storageMeta[i]['symbol'],storageMeta[i]['buyPrice'],data.latestPrice,storageMeta[i]['target']);
+        });
+      // updatePortfolioView(stockInfo['symbol'],stockInfo['buyPrice'],stockInfo['currentPrice'],stockInfo['target']);
     }
+    // if(todayHour>7 && ( todayHour<13 )) {
+    //   updateBarDynamically(storageCompanyList);
+    // }
   }
 }
 
@@ -35,7 +54,32 @@ function deleteStock(symbol, buyPrice, currentPrice, target) {
   
     }
     localStorage.setItem("stockInfo", JSON.stringify(storageMeta));
+    location.reload();
     }
+}
+
+function updateBarDynamically(storageCompanyList) {
+  fetch('https://cloud.iexapis.com/stable/stock/market/batch?symbols='+storageCompanyList+'&types=quote&range=1y&token=pk_60969cf2b45b429883fe2db2c75e8832', {
+    headers : {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+     }
+  }).then(response => response.json())
+    .then(data => {
+        for (var company in data) {
+          for (var j = 0; j < dataTable.getNumberOfRows(); j++) {
+             if (company == dataTable.getValue(j,0)) {
+                dataTable.setValue(j,1,data[company]["quote"].latestPrice);
+                dataTable.setValue(j,2,data[company]["quote"].latestPrice);
+                console.log(data[company]["quote"].latestPrice);
+             }
+          }
+        }
+    }).catch((error) => {
+      console.log(error);
+    });
+  drawBasic();
+  setTimeout(updateChart, 5000);
 }
 
 function updatePortfolioView(symbol, buyPrice, currentPrice, target) {
@@ -114,7 +158,7 @@ function getStockInfo(){
           companyList = companyList.concat(companyCode);
           var todayHour = new Date().getHours();
           var todayMin = new Date().getMinutes();
-          if(( todayHour>6 && todayMin > 30) && ( todayHour<13 )) {
+          if(todayHour>7 && ( todayHour<13 )) {
             updateChart();
           }
         }
