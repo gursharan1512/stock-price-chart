@@ -27,3 +27,8 @@ span {
     font-size: 10px;
     padding-bottom: 1px;
 }
+
+.deleteButton {
+    height: 24px;
+    width: 28px;
+}

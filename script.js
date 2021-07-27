@@ -1,6 +1,8 @@
 var dataTable = null;
 var companyList = "";
 
+window.onload = loadPortfolio;
+
 /**
  * Function to initialize the google bar chart with Coloumn names
  */
@@ -11,13 +13,33 @@ function initializeGoogleChart() {
   dataTable.addColumn({type:'number', role:'annotation'});
 }
 
-function buyStock(stockSymbol, currentPrice) {
+function loadPortfolio() {
+  var storageMeta = JSON.parse(window.localStorage.getItem("stockInfo"));
+  if(storageMeta != null) {
+    for(let stockInfo of storageMeta) {
+      updatePortfolioView(stockInfo['symbol'],stockInfo['buyPrice'],stockInfo['currentPrice'],stockInfo['target']);
+    }
+  }
+}
 
-  var symbol = stockSymbol.textContent.split(" ")[0];
-  var buyPrice = document.getElementById("currentData"+symbol).value;
-  var target = document.getElementById("targetData"+symbol).value;
-
+function deleteStock(symbol, buyPrice, currentPrice, target) {
+  console.log("deleteStock function");
+  var storageMeta = JSON.parse(window.localStorage.getItem("stockInfo"));
+  if(storageMeta != null) {
+    console.log("storageMeta.length - "+storageMeta.length);
+    for( var i = 0; i < storageMeta.length; i++){ 
+    
+      if ((storageMeta[i]['symbol'] == symbol) && (storageMeta[i]['buyPrice'] == buyPrice) && (storageMeta[i]['currentPrice'] == currentPrice) && (storageMeta[i]['target'] == target)) { 
+        storageMeta.splice(i, 1); 
+      }
   
+    }
+    localStorage.setItem("stockInfo", JSON.stringify(storageMeta));
+    }
+}
+
+function updatePortfolioView(symbol, buyPrice, currentPrice, target) {
+  console.log("updatePortfolioView function");
   var profitLoss = (currentPrice-buyPrice).toFixed(2);
   var profitLossPercent = (100*profitLoss/currentPrice).toFixed(2);
 
@@ -25,10 +47,11 @@ function buyStock(stockSymbol, currentPrice) {
   var barProfitPercent = (currentPrice-buyPrice)*100/target;
 
   //document.getElementById("demo").innerHTML += '<div class="row border-top mt-3 mb-2"><div class="col-4">'+symbol+'</div><div class="col-3">'+currentPrice+'</div><div class="col-2">'+profitLoss+'</div><div class="col-3 d-flex align-items-end profitPercentage">('+profitLossPercent+'%)</div></div>';
-  document.getElementById("demo").innerHTML += '<div class="row border-top mt-3 mb-2"><div class="col-4">'+symbol+'<span class="pl-2">Avg. '+buyPrice+'</span></div><div class="col-3">'+currentPrice+'</div><div class="col-5">'+profitLoss+'<span>('+profitLossPercent+'%)</span></div>';
+  document.getElementById("demo").innerHTML += '<div class="row border-top mt-2 pt-1 mb-2"><div class="col-4">'+symbol+'<span class="pl-2">Avg. '+buyPrice+'</span></div><div class="col-2 border-left">'+target+'</div><div class="col-2 border-left">'+currentPrice+'</div><div class="col-3 border-left">'+profitLoss+'<span>('+profitLossPercent+'%)</span> </div> <i class="fa fa-trash btn btn-danger deleteButton d-flex justify-content-center align-items-center" onclick="deleteStock(\''+symbol+'\','+buyPrice+','+currentPrice+','+target+')"></i>';
+  // document.getElementById("demo").innerHTML += '<div class="row border-top mt-2 pt-1 mb-2"><div class="col-4">'+symbol+'<span class="pl-2">Avg. '+buyPrice+'</span></div><div class="col-2 border-left">'+target+'</div><div class="col-2 border-left">'+currentPrice+'</div><div class="col-3 border-left">'+profitLoss+'<span>('+profitLossPercent+'%)</span> </div> <i class="fa fa-trash btn btn-danger deleteButton d-flex justify-content-center align-items-center" onclick="deleteStock()"></i>';
 
   if(barProfitPercent >= 0) {
-    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+barPercent+'%" aria-valuenow="'+barPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: '+barProfitPercent+'%" aria-valuenow="'+barProfitPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
+    document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+barPercent+'%" aria-valuenow="'+barPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: '+barProfitPercent+'%" aria-valuenow="'+barProfitPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div> ';
   }
   else {
     barProfitPercent = -1*barProfitPercent;
@@ -36,6 +59,28 @@ function buyStock(stockSymbol, currentPrice) {
     console.log("new percent - "+barProfitPercent);
     document.getElementById("demo").innerHTML += '<div class="progress"><div class="progress-bar" role="progressbar" style="width: '+barPercent+'%" aria-valuenow="'+barPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: '+barProfitPercent+'%" aria-valuenow="'+barProfitPercent+'" aria-valuemin="0" aria-valuemax="'+target+'"></div></div>';
   }
+}
+
+function buyStock(stockSymbol, currentPrice) {
+
+  console.log("buyStock function");
+  var symbol = stockSymbol.textContent.split(" ")[0];
+  var buyPrice = document.getElementById("currentData"+symbol).value;
+  var target = document.getElementById("targetData"+symbol).value;
+
+  var storageMeta = JSON.parse(window.localStorage.getItem("stockInfo"));
+  if(storageMeta == null) {
+    var meta = [{'symbol':symbol, 'buyPrice':buyPrice, 'currentPrice':currentPrice, 'target':target}];
+    localStorage.setItem("stockInfo", JSON.stringify(meta));
+  }
+  else {
+    var meta = {'symbol':symbol, 'buyPrice':buyPrice, 'currentPrice':currentPrice, 'target':target};
+    storageMeta.push(meta);
+    localStorage.setItem("stockInfo", JSON.stringify(storageMeta));
+  }
+  
+  updatePortfolioView(symbol,buyPrice,currentPrice,target);
+
 }
 
 /**
@@ -62,7 +107,7 @@ function getStockInfo(){
         let li = document.createElement("li");
         li.setAttribute('id',companyCode);
         li.innerHTML += '<li class="list-group-item">'+companyCode+'<button class="btn btn-primary float-right new_button" type="button" data-toggle="collapse" data-target="#collapse'+companyCode+'" aria-expanded="false" aria-controls="collapse'+companyCode+'"> Buy </button> </li> ';
-        li.innerHTML += '<div class="collapse" id="collapse'+companyCode+'"><div class="card card-body"> <div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Current Price:</label></div><div class="col-9"><input type="number" id="currentData'+companyCode+'" class="form-control validate mb-3" value="'+data.latestPrice+'"></div></div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Target:</label></div><div class="col-9"><input type="number" id="targetData'+companyCode+'" class="form-control validate mb-3"></div></div><button type="submit" class="btn btn-secondary mb-2 new_button d-flex align-items-center" onclick="buyStock('+companyCode+','+data.latestPrice+')" data-toggle="collapse" data-target="#collapse'+companyCode+'">Submit</button></div> </div></div>'
+        li.innerHTML += '<div class="collapse" id="collapse'+companyCode+'"><div class="card card-body"> <div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Current Price:</label></div><div class="col-9"><input type="number" id="currentData'+companyCode+'" class="form-control validate mb-3" value="'+data.latestPrice+'"></div></div><div class="row"><div class="col-3"><label data-error="wrong" data-success="right" for="buyPrice">Target:</label></div><div class="col-9"><input type="number" id="targetData'+companyCode+'" class="form-control validate mb-3"></div></div><button type="submit" class="btn btn-secondary mb-2 new_button" onclick="buyStock('+companyCode+','+data.latestPrice+')" data-toggle="collapse" data-target="#collapse'+companyCode+'">Submit</button></div> </div></div>'
 
         ul.appendChild(li);
         if (dataTable.getNumberOfRows() == 1) {
